@@ -320,7 +320,11 @@ class MovingMNIST(VideoDataset):
         else:
             # When testining, loads the precomputed videos
             prefix = '' if deterministic else 's'
-            dataset = np.load(os.path.join(data_dir, f'{prefix}mmnist_test_{num_digits}digits_{nx}.npz'),
+            # dataset = np.load(os.path.join(data_dir, f'{prefix}mmnist_test_{num_digits}digits_{nx}.npz'),
+                            #   allow_pickle=True)
+            
+            # TEMP: test on billards video [npz: 'sequences': 100 x # video x 64 x 64]
+            dataset = np.load(os.path.join(data_dir, 'billiards.npz'),
                               allow_pickle=True)
             sequences = dataset['sequences']
             data = [sequences[:, i] for i in range(sequences.shape[1])]
