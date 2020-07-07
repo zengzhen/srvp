@@ -21,7 +21,9 @@ import numpy as np
 from os.path import join
 from tqdm import trange
 from torchvision import datasets
+import sys
 
+sys.path.append('/home/ubuntu/workspace/srvp')
 from data.mmnist import MovingMNIST
 
 
@@ -60,7 +62,8 @@ if __name__ == "__main__":
     test_labels = []
     test_objects = []
     # The size of the testing set is the total number of testing digits in MNIST divided by the number of digits
-    for i in trange(len(digits) // args.digits):
+    # for i in trange(len(digits) // args.digits):
+    for i in trange(int(len(digits) // args.digits/250)):
         x = np.zeros((args.seq_len, args.frame_size, args.frame_size), dtype=np.float32)
         latents = []
         labels = []
@@ -81,6 +84,7 @@ if __name__ == "__main__":
         test_latents.append(np.array(latents))
         test_labels.append(np.array(labels).astype(np.uint8))
         test_objects.append(np.array(objects))
+        print(i)
     test_videos = np.array(test_videos, dtype=np.uint8).transpose(1, 0, 2, 3)
     test_latents = np.array(test_latents).transpose(2, 0, 1, 3)
     test_labels = np.array(test_labels, dtype=np.uint8)

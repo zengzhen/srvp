@@ -34,7 +34,7 @@ if __name__ == "__main__":
         ''')
     parser.add_argument('--data_dir', type=str, metavar='DIR', required=True,
                         help='Folder where the dataset is stored and the testing set will be saved.')
-    parser.add_argument('--size', type=int, metavar='SIZE', default=1000,
+    parser.add_argument('--size', type=int, metavar='SIZE', default=10,
                         help='Number of sequences to extract (size of the testing set).')
     parser.add_argument('--seq_len', type=int, metavar='LEN', default=40,
                         help='Number of frames per testing sequences.')
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Fix random seed
-    np.random.seed(args.seed)
+    # np.random.seed(args.seed)
 
     # Update data directory with processed videos directlory
     processed_dir = join(args.data_dir, f'processed_{args.image_size}')
@@ -60,6 +60,7 @@ if __name__ == "__main__":
         person = np.random.randint(21, 26)
         trial = np.random.randint(1, 5)
         vid = f'person{person:02d}_{action}_d{trial}'
+        print(vid)
         images_fnames = sorted(os.listdir(join(processed_dir, action, vid)))
         # Randomly choose the beginning of the video extract to be included in the testing set
         t_0 = np.random.randint(len(images_fnames) - args.seq_len + 1)
