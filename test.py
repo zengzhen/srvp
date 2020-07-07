@@ -88,6 +88,7 @@ def main(opt):
         os.environ["CUDA_VISIBLE_DEVICES"] = str(opt.device)
         device = torch.device('cuda:0')
         torch.cuda.set_device(0)
+        print("using GPU")
     # Seed
     random.seed(opt.test_seed)
     np.random.seed(opt.test_seed)
@@ -210,22 +211,22 @@ def main(opt):
     ##################################################################################################################
     # Compute FVD
     ##################################################################################################################
-    print('Computing FVD...')
-    cond = torch.cat(cond, 0).permute(1, 0, 4, 2, 3).float().div(255)
-    gt = torch.cat(gt, 0).permute(1, 0, 4, 2, 3).float().div(255)
-    ref = torch.cat([cond, gt], 0)
-    hyp = torch.from_numpy(samples['random_1']).clone().permute(1, 0, 4, 2, 3).float().div(255)
-    hyp = torch.cat([cond, hyp], 0)
-    fvd = fvd_score(ref, hyp)
+    # print('Computing FVD...')
+    # cond = torch.cat(cond, 0).permute(1, 0, 4, 2, 3).float().div(255)
+    # gt = torch.cat(gt, 0).permute(1, 0, 4, 2, 3).float().div(255)
+    # ref = torch.cat([cond, gt], 0)
+    # hyp = torch.from_numpy(samples['random_1']).clone().permute(1, 0, 4, 2, 3).float().div(255)
+    # hyp = torch.cat([cond, hyp], 0)
+    # fvd = fvd_score(ref, hyp)
 
     ##################################################################################################################
     # Print results
     ##################################################################################################################
-    print('\n')
-    print('Results:')
-    for name, res in results.items():
-        print(name, res.mean(), '+/-', 1.960 * res.std() / np.sqrt(len(res)))
-    print(f'FVD', fvd)
+    # print('\n')
+    # print('Results:')
+    # for name, res in results.items():
+    #     print(name, res.mean(), '+/-', 1.960 * res.std() / np.sqrt(len(res)))
+    # print(f'FVD', fvd)
 
     ##################################################################################################################
     # Save samples
