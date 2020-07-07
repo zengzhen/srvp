@@ -119,3 +119,8 @@ Please also refer to the help message of `test.py`:
 ```bash
 python test.py --help
 ```
+
+Example
+```
+python test.py --data_dir /home/ubuntu/KTH_dataset/ --xp_dir /home/ubuntu/workspace/srvp/models/kth/ --lpips_dir /home/ubuntu/workspace/PerceptualSimilarity/models/ --device 0
+```
