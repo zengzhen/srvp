@@ -33,6 +33,9 @@ import data.base as data
 import module.srvp as srvp
 import module.utils as utils
 
+
+sys.path.append('/home/ubuntu/workspace/srvp')
+
 # Mixed-precision training packages
 torch_amp_imported = True
 try:
@@ -169,14 +172,14 @@ def evaluate(forward_fn, val_loader, device, opt):
             # Perform a given number of predictions per video
             all_x = []
             for _ in range(opt.n_samples_test - 1):
-                all_x.append(forward_fn(x_inf, nt, dt=1 / opt.n_euler_steps)[0].cpu())
+                all_x.append(forward_fn(x_inf, nt, dt=1 / opt.n_euler_steps)[0])
             all_x = torch.stack(all_x)
 
             # Sort predictions per PSNR and select the closesto one to the ground truth
-            all_mse = torch.mean(F.mse_loss(all_x, x.cpu().expand_as(all_x), reduction='none'), dim=[4, 5])
+            all_mse = torch.mean(F.mse_loss(all_x, x.expand_as(all_x), reduction='none'), dim=[4, 5])
             all_psnr = torch.mean(10 * torch.log10(1 / all_mse), dim=[1, 3])
             _, idx_best = all_psnr.max(0)
-            x_ = all_x[idx_best, :, torch.arange(n_b).to(device)].transpose(0, 1).contiguous().to(device)
+            x_ = all_x[idx_best, :, torch.arange(n_b).to(device)].transpose(0, 1).contiguous()
 
             # Compute the final PSNR score
             mse = torch.mean(F.mse_loss(x_, x, reduction='none'), dim=[3, 4])
@@ -200,6 +203,8 @@ def main(opt):
     # Setup
     ##################################################################################################################
     opt.hostname = os.uname()[1]
+    print("torch_amp: ", opt.torch_amp)
+    print("apex_amp: ", opt.apex_amp)
     # Device handling (CPU, GPU, multi GPU)
     if opt.device is None:
         device = torch.device('cpu')
@@ -294,7 +299,7 @@ def main(opt):
     if opt.torch_amp:
         scaler = torch_amp.GradScaler()
     if opt.apex_amp:
-        model, optimizer = apex_amp.initialize(model, optimizer, opt_level=opt.amp_opt_lvl,
+        model, optimizer = apex_amp.initialize(model.to('cuda'), optimizer, opt_level=opt.amp_opt_lvl,
                                                keep_batchnorm_fp32=opt.keep_batchnorm_fp32)
 
     ##################################################################################################################
