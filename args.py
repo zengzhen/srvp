@@ -22,7 +22,7 @@ AMP_OPT_LEVELS = ['O0', 'O1', 'O2', 'O3']
 ARCH_TYPES = ['dcgan', 'vgg']
 
 
-DATASETS = ['smmnist', 'kth', 'human', 'bair']
+DATASETS = ['smmnist', 'kth', 'human', 'bouncingball']
 
 
 def create_args():
@@ -145,7 +145,7 @@ def create_args():
     # Evaluation
     eval_p = p.add_argument_group(title='Evaluation',
                                   description='Evaluation parameters.')
-    eval_p.add('--val_interval', type=int, metavar='STEPS', default=5000,
+    eval_p.add('--val_interval', type=int, metavar='STEPS', default=10000,
                help='Number of optimization steps between each evaluation (and between each best model saving).')
     eval_p.add('--chkpt_interval', type=int, metavar='STEPS', default=None,
                help='If not None, save intermediate models every specified number of optimization steps.')

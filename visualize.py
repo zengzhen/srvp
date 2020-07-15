@@ -9,7 +9,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser('''
 #         Visualize test results in 3-row videos: GT, Pred_best, Pred_worst
 #         ''')
-    parser.add_argument('--dataset', type=str, required=True, choices=['KTH', 'MMNIST', 'Billiards'],
+    parser.add_argument('--dataset', type=str, required=True, choices=['KTH', 'MMNIST', 'Billiards','BouncingBalls'],
                         help='Name of the dataset')
     parser.add_argument('--mode', type=str, required=False, choices=['s', 'd'],
                         help='Mode (s/d) for stochastic or deterministic MMNIST')
@@ -40,6 +40,9 @@ if __name__ == "__main__":
     elif args.dataset == "Billiards":
         test_path = '/home/ubuntu/Billiards_dataset/billiards.npz'
         pred_path = '/home/ubuntu/workspace/srvp/models/billiard/'
+    elif args.dataset == "BouncingBalls":
+        test_path = '/home/ubuntu/BouncingBalls_dataset/test_bouncing_balls.npz'
+        pred_path = '/home/ubuntu/workspace/srvp/models/bouncing_balls/'
 
     test_set = np.load(test_path)
     pred_best = np.load(pred_path + args.metric + '_best.npz')
@@ -73,9 +76,17 @@ if __name__ == "__main__":
         pred_num = 95
         test_set_sequence = test_set['sequences'].transpose(1, 0, 2, 3)
         for j in range(len(test_set_sequence)):
-            digits_name = str(j)
-            video_name_list.append(digits_name)
-            plt_name_list.append(digits_name)
+            name = str(j)
+            video_name_list.append(name)
+            plt_name_list.append(name)
+    elif args.dataset == 'BouncingBalls':
+        cond_num = 5
+        pred_num = 55
+        test_set_sequence = test_set['sequences'].transpose(1, 0, 2, 3)
+        for j in range(len(test_set_sequence)):
+            name = str(j)
+            video_name_list.append(name)
+            plt_name_list.append(name)
 
     for j in range(len(test_set_sequence)):
         img_array = []
