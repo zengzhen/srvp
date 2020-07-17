@@ -11,6 +11,7 @@ import cv2
 from torchvision import datasets
 
 from data.base import VideoDataset
+import sys
 
 class BouncingBalls(VideoDataset):
   '''
@@ -38,27 +39,46 @@ class BouncingBalls(VideoDataset):
     self.initial_size = 128
     self.scale = self.initial_size / 800
     self.radius = int(60 * self.scale)
+    # self.train_count = 0
 
   def __getitem__(self, idx):
     if not self.train:
       # When testing, pick the selected video (from the precomputed testing set)
       return self.data[idx]
-    # traj sizeL (n_frames, n_balls, 4)
-    traj = self.data[idx]
-    vid_len, n_balls = traj.shape[:2]
+    # When training, pick a random video from the dataset, and extract a random sequence
+    # Iterate until the selected video is long enough
+    vid_id = np.random.randint(len(self.data))
+    traj = self.data[vid_id] # traj size: (n_frames, n_balls, 4)
+    vid_len = len(traj)
+    if vid_len < self.seq_len:
+      print("Error: trajecotry length of bouncing balls should be longder than training seq_len")
+      sys.exit(1)
 
+    # Random timestep for the beginning of the video
+    t0 = np.random.randint(vid_len - self.seq_len + 1)
+    # Extract the sequence from trajectory files
+    vid_len, n_balls = traj.shape[:2]
     images = np.zeros([self.seq_len, self.frame_size, self.frame_size], np.uint8)
-    for fid in range(self.seq_len):
+    for t in range(self.seq_len):
       temp = np.zeros([self.initial_size, self.initial_size], np.float32)
       for bid in range(n_balls):
         # each ball:
-        ball = traj[fid, bid]
+        ball = traj[t0+t, bid]
         x, y = int(round(self.scale * ball[0])), int(round(self.scale * ball[1]))
         temp = cv2.circle(temp, (x, y), int(self.radius * ball[3]),
                                  255, -1)
         # In case of overlap, brings back video values to [0, 255]
         temp[temp > 255] = 255
-      images[fid] = cv2.resize(temp.astype(np.uint8), (self.frame_size, self.frame_size))
+      images[t] = cv2.resize(temp.astype(np.uint8), (self.frame_size, self.frame_size))
+    
+    # video_file = '/home/ubuntu/workspace/srvp/results/BouncingBalls/train_%04d.mp4' % (self.train_count)
+    # print(video_file)
+    # out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 10, (self.frame_size, self.frame_size), isColor=False)
+
+    # for i in range(len(images)):
+    #     out.write(images[i])
+    # out.release()
+    # self.train_count += 1
 
     return images
 

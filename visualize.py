@@ -80,8 +80,8 @@ if __name__ == "__main__":
             video_name_list.append(name)
             plt_name_list.append(name)
     elif args.dataset == 'BouncingBalls':
-        cond_num = 5
-        pred_num = 55
+        cond_num = 10
+        pred_num = 50
         test_set_sequence = test_set['sequences'].transpose(1, 0, 2, 3)
         for j in range(len(test_set_sequence)):
             name = str(j)
