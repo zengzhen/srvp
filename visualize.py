@@ -9,7 +9,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser('''
 #         Visualize test results in 3-row videos: GT, Pred_best, Pred_worst
 #         ''')
-    parser.add_argument('--dataset', type=str, required=True, choices=['KTH', 'MMNIST', 'Billiards','BouncingBalls'],
+    parser.add_argument('--dataset', type=str, required=True, choices=['KTH', 'MMNIST', 'Billiards','BouncingBalls', 'weather'],
                         help='Name of the dataset')
     parser.add_argument('--mode', type=str, required=False, choices=['s', 'd'],
                         help='Mode (s/d) for stochastic or deterministic MMNIST')
@@ -43,6 +43,9 @@ if __name__ == "__main__":
     elif args.dataset == "BouncingBalls":
         test_path = '/home/ubuntu/BouncingBalls_dataset/test_bouncing_balls.npz'
         pred_path = '/home/ubuntu/workspace/srvp/models/bouncing_balls/'
+    elif args.dataset == "weather":
+        test_path = '/home/ubuntu/BouncingBalls_dataset/weather_test_set_60.npz.npz'
+        pred_path = '/home/ubuntu/workspace/srvp/models/weather/'
 
     test_set = np.load(test_path)
     pred_best = np.load(pred_path + args.metric + '_best.npz')
@@ -80,9 +83,17 @@ if __name__ == "__main__":
             video_name_list.append(name)
             plt_name_list.append(name)
     elif args.dataset == 'BouncingBalls':
-        cond_num = 5
-        pred_num = 55
+        cond_num = 40
+        pred_num = 20
         test_set_sequence = test_set['sequences'].transpose(1, 0, 2, 3)
+        for j in range(len(test_set_sequence)):
+            name = str(j)
+            video_name_list.append(name)
+            plt_name_list.append(name)
+    elif args.dataset == 'weather':
+        cond_num = 10
+        pred_num = 50
+        test_set_sequence = test_set['sequences']
         for j in range(len(test_set_sequence)):
             name = str(j)
             video_name_list.append(name)

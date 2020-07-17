@@ -22,7 +22,7 @@ AMP_OPT_LEVELS = ['O0', 'O1', 'O2', 'O3']
 ARCH_TYPES = ['dcgan', 'vgg']
 
 
-DATASETS = ['smmnist', 'kth', 'human', 'bouncingball']
+DATASETS = ['smmnist', 'kth', 'human', 'bouncingball', 'weather']
 
 
 def create_args():
