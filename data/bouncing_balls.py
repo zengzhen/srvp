@@ -86,12 +86,12 @@ class BouncingBalls(VideoDataset):
     return self.__class__(data, self.frame_size, self.seq_len, self.train)
 
   def __len__(self):
-    # if self.train:
-    #     # Arbitrary number.
-    #     # The number is a trade-off for max efficiency
-    #     # If too low, it is not good for batch size and multi-threaded dataloader
-    #     # If too high, it is not good for shuffling and sampling
-    #     return 30000
+    if self.train:
+      # Arbitrary number.
+      # The number is a trade-off for max efficiency
+      # If too low, it is not good for batch size and multi-threaded dataloader
+      # If too high, it is not good for shuffling and sampling
+      return 30000
     return len(self.data)
 
   @classmethod
