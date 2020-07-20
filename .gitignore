@@ -2,3 +2,4 @@
 __pycache*
 models/
 results/
+*.png
