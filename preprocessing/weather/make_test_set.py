@@ -40,7 +40,7 @@ if __name__ == "__main__":
                         help='Number of sequences to extract (size of the testing set).')
     parser.add_argument('--seq_len', type=int, metavar='LEN', default=60,
                         help='Number of frames per testing sequences.')
-    parser.add_argument('--image_size', type=int, metavar='SIZE', default=128,
+    parser.add_argument('--image_size', type=int, metavar='SIZE', default=64,
                         help='Width and height of videos.')
     parser.add_argument('--seed', type=int, metavar='SEED', default=42,
                         help='Fixed NumPy seed to produce the same dataset at each run.')
@@ -65,6 +65,7 @@ if __name__ == "__main__":
         for t in range(args.seq_len):
             # img = cv2.imread(join(processed_dir, vid, images_fnames[t_0 + t]), cv2.IMREAD_GRAYSCALE)
             img = cv2.imread(join(processed_dir, vid, images_fnames[t_0 + t]))
+            img = cv2.resize(img, (args.image_size, args.image_size))
             images.append(img)
         sequences.append(np.array(images))
 
