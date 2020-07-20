@@ -53,6 +53,7 @@ if __name__ == "__main__":
 
     video_name_list = []
     plt_name_list = []
+    color_convert = True
     # KTH: test_set:'samples', 'persons', 'actions', 'sequences'
     # MNIST: test_set: 'latents', 'labels', 'digits', 'sequences'
     if args.dataset == 'KTH':
@@ -94,6 +95,7 @@ if __name__ == "__main__":
         cond_num = 10
         pred_num = 50
         test_set_sequence = test_set['sequences']
+        color_convert = False
         for j in range(len(test_set_sequence)):
             name = str(j)
             video_name_list.append(name)
@@ -108,7 +110,10 @@ if __name__ == "__main__":
         if plot:
             fig = plt.figure(figsize=(15,6))
         for i in range(cond_num):
-            img = cv2.cvtColor(sequence[i], cv2.COLOR_BGR2RGB)
+            if color_convert:
+                img = cv2.cvtColor(sequence[i], cv2.COLOR_BGR2RGB)
+            else:
+                img = sequence[i]
             cv2.rectangle(img,(0,0),(img.shape[0]-1,img.shape[1]-1),(0,255,0),2)
             # three rows of images: upper gt, lower pred
             conc_img = cv2.vconcat([img, img, img]) 
@@ -125,14 +130,21 @@ if __name__ == "__main__":
         if plot:
             fig = plt.figure(figsize=(15,6))
         for i in range(pred_num):
-            img_best = cv2.cvtColor(pred_seq_best[i], cv2.COLOR_BGR2RGB)
-            img_worst = cv2.cvtColor(pred_seq_worst[i], cv2.COLOR_BGR2RGB)
+            if color_convert:
+                img_best = cv2.cvtColor(pred_seq_best[i], cv2.COLOR_BGR2RGB)
+                img_worst = cv2.cvtColor(pred_seq_worst[i], cv2.COLOR_BGR2RGB)
+            else:
+                img_best = pred_seq_best[i]
+                img_worst = pred_seq_worst[i]
             cv2.rectangle(img_best,(0,0),(img_best.shape[0]-1,img_best.shape[1]-1),(0,165,255),2)
             cv2.rectangle(img_worst,(0,0),(img_worst.shape[0]-1,img_worst.shape[1]-1),(0,165,255),2)
             # two rows of images: upper gt, lower pred
-            gt_img = cv2.cvtColor(sequence[i+cond_num], cv2.COLOR_BGR2RGB)
+            if color_convert:
+                gt_img = cv2.cvtColor(sequence[i+cond_num], cv2.COLOR_BGR2RGB)
+            else:
+                gt_img = sequence[i+cond_num]
             cv2.rectangle(gt_img,(0,0),(gt_img.shape[0]-1,gt_img.shape[1]-1),(0,255,0),2)
-            conc_img = cv2.vconcat([gt_img, img_best, img_worst]) 
+            conc_img = cv2.vconcat([gt_img, img_best, img_worst])
             img_array.append(conc_img)
 
             if plot:
