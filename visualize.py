@@ -44,7 +44,7 @@ if __name__ == "__main__":
         test_path = '/home/ubuntu/BouncingBalls_dataset/test_bouncing_balls.npz'
         pred_path = '/home/ubuntu/workspace/srvp/models/bouncing_balls/'
     elif args.dataset == "weather":
-        test_path = '/home/ubuntu/BouncingBalls_dataset/weather_test_set_60.npz.npz'
+        test_path = '/home/ubuntu/weather_dataset/weather_test_set_60.npz'
         pred_path = '/home/ubuntu/workspace/srvp/models/weather/'
 
     test_set = np.load(test_path)
