@@ -73,10 +73,12 @@ class Weather(VideoDataset):
         # Random timestep for the beginning of the video
         t0 = np.random.randint(vid_len - self.seq_len + 1)
         # Extract the sequence from frame image files
-        x = np.zeros((self.seq_len, self.nx, self.nx, self.nc), dtype=np.uint8)
+        x = np.zeros((self.seq_len, self.nx, self.nx), dtype=np.uint8)
+        # x = np.zeros((self.seq_len, self.nx, self.nx, self.nc), dtype=np.uint8)
         for t in range(self.seq_len):
             img_path = vid[t0 + t]
-            img = cv2.imread(img_path)
+            # img = cv2.imread(img_path)
+            img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
             img = cv2.resize(img, (self.nx, self.nx))
             x[t] += np.array(img)
         # Returned video is an uint8 NumPy array of shape (length, width, height)

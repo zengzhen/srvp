@@ -63,15 +63,15 @@ if __name__ == "__main__":
         t_0 = np.random.randint(len(images_fnames) - args.seq_len + 1)
         images = []
         for t in range(args.seq_len):
-            # img = cv2.imread(join(processed_dir, vid, images_fnames[t_0 + t]), cv2.IMREAD_GRAYSCALE)
-            img = cv2.imread(join(processed_dir, vid, images_fnames[t_0 + t]))
+            img = cv2.imread(join(processed_dir, vid, images_fnames[t_0 + t]), cv2.IMREAD_GRAYSCALE)
+            # img = cv2.imread(join(processed_dir, vid, images_fnames[t_0 + t]))
             img = cv2.resize(img, (args.image_size, args.image_size))
             images.append(img)
         sequences.append(np.array(images))
 
         video_file = '/home/ubuntu/weather_dataset/test/' + str(i) + '.mp4'
         print(video_file)
-        out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 10, (args.image_size, args.image_size), isColor=True)
+        out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 10, (args.image_size, args.image_size), isColor=False)
 
         for i in range(len(images)):
             out.write(images[i])
