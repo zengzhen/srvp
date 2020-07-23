@@ -57,6 +57,7 @@ if __name__ == "__main__":
     video_name_list = []
     plt_name_list = []
     color_convert = True
+    show_residual = False
     # KTH: test_set:'samples', 'persons', 'actions', 'sequences'
     # MNIST: test_set: 'latents', 'labels', 'digits', 'sequences'
     if args.dataset == 'KTH':
@@ -105,9 +106,10 @@ if __name__ == "__main__":
             plt_name_list.append(name)
     elif args.dataset == 'market_heatmap':
         cond_num = 5
-        pred_num = 30
-        test_set_sequence = test_set['sequences']
-        color_convert = True
+        pred_num = 10
+        test_set_sequence = test_set['sequences'].transpose(1, 0, 2, 3, 4)
+        color_convert = False
+        show_residual = True
         for j in range(len(test_set_sequence)):
             name = str(j)
             video_name_list.append(name)
@@ -128,7 +130,11 @@ if __name__ == "__main__":
                 img = sequence[i]
             cv2.rectangle(img,(0,0),(img.shape[0]-1,img.shape[1]-1),(0,255,0),2)
             # three rows of images: upper gt, lower pred
-            conc_img = cv2.vconcat([img, img, img]) 
+            if show_residual:
+                residual = np.zeros([img.shape[0], img.shape[1], 3], np.uint8)
+                conc_img = cv2.vconcat([img, img, img, residual])
+            else:
+                conc_img = cv2.vconcat([img, img, img])
             img_array.append(conc_img)
 
             if plot:
@@ -156,7 +162,11 @@ if __name__ == "__main__":
             else:
                 gt_img = sequence[i+cond_num]
             cv2.rectangle(gt_img,(0,0),(gt_img.shape[0]-1,gt_img.shape[1]-1),(0,255,0),2)
-            conc_img = cv2.vconcat([gt_img, img_best, img_worst])
+            if show_residual:
+                residual = abs(gt_img.astype(np.int32) - img_best.astype(np.int32)).astype(np.uint8)
+                conc_img = cv2.vconcat([gt_img, img_best, img_worst, residual])
+            else:
+                conc_img = cv2.vconcat([gt_img, img_best, img_worst])
             img_array.append(conc_img)
 
             if plot:
@@ -167,7 +177,10 @@ if __name__ == "__main__":
 
         video_file = 'results/' + dataset + '/' + video_name + '.mp4'
         print(video_file)
-        out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 10, (img.shape[0], img.shape[1]*3), isColor=True)
+        if show_residual:
+            out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 1, (img.shape[0], img.shape[1]*4), isColor=True)
+        else:
+            out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 1, (img.shape[0], img.shape[1]*3), isColor=True)
 
         for i in range(len(img_array)):
             out.write(img_array[i])

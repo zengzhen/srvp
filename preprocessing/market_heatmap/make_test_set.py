@@ -33,7 +33,7 @@ if __name__ == "__main__":
     )
     parser.add_argument('--data_dir', type=str, metavar='DIR', required=True,
                         help='Folder where the testing set will be saved.')
-    parser.add_argument('--seq_len', type=int, metavar='LEN', default=30,
+    parser.add_argument('--seq_len', type=int, metavar='LEN', default=15,
                         help='Number of frames per testing sequences.')
     parser.add_argument('--seed', type=int, metavar='SEED', default=42,
                         help='Fixed NumPy seed to produce the same dataset at each run.')
@@ -43,10 +43,10 @@ if __name__ == "__main__":
 
     # read in all CSV files: 01.01.2019 - 12.31.2019
     data = []
-    args.data_dir = args.data_dir + '/test/'
-    for index, market in enumerate(list_files(args.data_dir, 'csv')):
+    test_data_dir = args.data_dir + '/test/'
+    for index, market in enumerate(list_files(test_data_dir, 'csv')):
         print(market)
-        market_data = np.genfromtxt(os.path.join(args.data_dir, market), delimiter=',', skip_header=1)
+        market_data = np.genfromtxt(os.path.join(test_data_dir, market), delimiter=',', skip_header=1)
         # column 4 - close values
         market_data = market_data[:,4]
         # calcualte gain/loss percentage based on close values
@@ -65,7 +65,7 @@ if __name__ == "__main__":
         # Extract the sequence from stock_hist files
         n_markets = data[0].shape[0]
 
-        images = np.zeros([args.seq_len, args.frame_size, args.frame_size], np.uint8)
+        images = np.zeros([args.seq_len, args.frame_size, args.frame_size, 3], np.uint8)
         for t in range(args.seq_len):
             for id in range(n_markets):
                 # 9 markets visualzied in 3x3 grid
@@ -84,7 +84,14 @@ if __name__ == "__main__":
         test_videos.append(images.astype(np.uint8))
         print(i)
 
-    test_videos = np.array(test_videos, dtype=np.uint8).transpose(1, 0, 2, 3)
+        video_file = '/home/ubuntu/workspace/srvp/results/market_heatmap/test_%04d.mp4' % (i)
+        print(video_file)
+        out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 1, (args.frame_size, args.frame_size), isColor=True)
+        for vid in range(len(images)):
+            out.write(images[vid])
+        out.release()
+
+    test_videos = np.array(test_videos, dtype=np.uint8).transpose(1, 0, 2, 3, 4)
 
     # Save results at the given path
     fname = 'test_market_heatmap.npz'

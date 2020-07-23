@@ -71,9 +71,9 @@ class MarketHeatMap(VideoDataset):
         x1, y1 = (int(math.floor(id/3.0)) * tile_h, id%3 * tile_w)
         x2, y2 = (x1+tile_h-2, y1+tile_w-2)
         # sanity check
-        if perc > self.max_perc:
-            print("Error: perc in gain exceed assumed max_perc")
-            sys.exit(1)
+        # if perc > self.max_perc:
+        #     print("Error: perc in gain exceed assumed max_perc")
+        #     sys.exit(1)
         # draw tiles
         if perc >= 0: # green
             images[t] = cv2.rectangle(images[t], (x1, y1), (x2, y2), (0, 255*sigmoid(perc), 0), -1)
@@ -82,7 +82,7 @@ class MarketHeatMap(VideoDataset):
 
     # video_file = '/home/ubuntu/workspace/srvp/results/market_heatmap/train_%04d.mp4' % (self.train_count)
     # print(video_file)
-    # out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 5, (self.frame_size, self.frame_size), isColor=True)
+    # out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 1, (self.frame_size, self.frame_size), isColor=True)
 
     # for i in range(len(images)):
     #     out.write(images[i])
