@@ -9,7 +9,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser('''
 #         Visualize test results in 3-row videos: GT, Pred_best, Pred_worst
 #         ''')
-    parser.add_argument('--dataset', type=str, required=True, choices=['KTH', 'MMNIST', 'Billiards','BouncingBalls', 'weather'],
+    parser.add_argument('--dataset', type=str, required=True, choices=['KTH', 'MMNIST', 'Billiards','BouncingBalls', 'weather', 'market_heatmap'],
                         help='Name of the dataset')
     parser.add_argument('--mode', type=str, required=False, choices=['s', 'd'],
                         help='Mode (s/d) for stochastic or deterministic MMNIST')
@@ -46,6 +46,9 @@ if __name__ == "__main__":
     elif args.dataset == "weather":
         test_path = '/home/ubuntu/weather_dataset/weather_test_set_60.npz'
         pred_path = '/home/ubuntu/workspace/srvp/models/weather/'
+    elif args.dataset == "market_heatmap":
+        test_path = '/home/ubuntu/market_heatmap/test_market_heatmap.npz'
+        pred_path = '/home/ubuntu/workspace/srvp/models/market_heatmap/'
 
     test_set = np.load(test_path)
     pred_best = np.load(pred_path + args.metric + '_best.npz')
@@ -96,6 +99,15 @@ if __name__ == "__main__":
         pred_num = 50
         test_set_sequence = test_set['sequences']
         color_convert = False
+        for j in range(len(test_set_sequence)):
+            name = str(j)
+            video_name_list.append(name)
+            plt_name_list.append(name)
+    elif args.dataset == 'market_heatmap':
+        cond_num = 5
+        pred_num = 30
+        test_set_sequence = test_set['sequences']
+        color_convert = True
         for j in range(len(test_set_sequence)):
             name = str(j)
             video_name_list.append(name)
