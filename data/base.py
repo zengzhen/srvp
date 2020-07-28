@@ -57,6 +57,9 @@ def load_dataset(config, train):
     if name == 'market_heatmap':
         from data.market_heatmap import MarketHeatMap
         return MarketHeatMap.make_dataset(config.data_dir, config.nx, config.seq_len, train)
+    if name == 'payments':
+        from data.payments import Payments
+        return Payments.make_dataset(config.data_dir, config.nx, config.seq_len, train)
     raise ValueError(f'No dataset named \'{name}\'')
 
 

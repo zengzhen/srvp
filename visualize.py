@@ -9,7 +9,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser('''
 #         Visualize test results in 3-row videos: GT, Pred_best, Pred_worst
 #         ''')
-    parser.add_argument('--dataset', type=str, required=True, choices=['KTH', 'MMNIST', 'Billiards','BouncingBalls', 'weather', 'market_heatmap'],
+    parser.add_argument('--dataset', type=str, required=True, choices=['KTH', 'MMNIST', 'Billiards','BouncingBalls', 'weather', 'market_heatmap', 'payments'],
                         help='Name of the dataset')
     parser.add_argument('--mode', type=str, required=False, choices=['s', 'd'],
                         help='Mode (s/d) for stochastic or deterministic MMNIST')
@@ -49,6 +49,9 @@ if __name__ == "__main__":
     elif args.dataset == "market_heatmap":
         test_path = '/home/ubuntu/market_heatmap/test_market_heatmap.npz'
         pred_path = '/home/ubuntu/workspace/srvp/models/market_heatmap/'
+    elif args.dataset == "payments":
+        test_path = '/home/ubuntu/PYMT/test_payments.npz'
+        pred_path = '/home/ubuntu/workspace/srvp/models/payments/'
 
     test_set = np.load(test_path)
     pred_best = np.load(pred_path + args.metric + '_best.npz')
@@ -99,17 +102,25 @@ if __name__ == "__main__":
         cond_num = 10
         pred_num = 50
         test_set_sequence = test_set['sequences']
-        color_convert = False
+        color_convert = True
         for j in range(len(test_set_sequence)):
             name = str(j)
             video_name_list.append(name)
             plt_name_list.append(name)
     elif args.dataset == 'market_heatmap':
-        cond_num = 5
-        pred_num = 10
+        cond_num = 10
+        pred_num = 5
         test_set_sequence = test_set['sequences'].transpose(1, 0, 2, 3, 4)
         color_convert = False
         show_residual = True
+        for j in range(len(test_set_sequence)):
+            name = str(j)
+            video_name_list.append(name)
+            plt_name_list.append(name)
+    elif args.dataset == 'payments':
+        cond_num = 8
+        pred_num = 25-8
+        test_set_sequence = test_set['sequences'].transpose(1, 0, 2, 3)
         for j in range(len(test_set_sequence)):
             name = str(j)
             video_name_list.append(name)
@@ -178,9 +189,9 @@ if __name__ == "__main__":
         video_file = 'results/' + dataset + '/' + video_name + '.mp4'
         print(video_file)
         if show_residual:
-            out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 1, (img.shape[0], img.shape[1]*4), isColor=True)
+            out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 10, (img.shape[0], img.shape[1]*4), isColor=True)
         else:
-            out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 1, (img.shape[0], img.shape[1]*3), isColor=True)
+            out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 10, (img.shape[0], img.shape[1]*3), isColor=True)
 
         for i in range(len(img_array)):
             out.write(img_array[i])

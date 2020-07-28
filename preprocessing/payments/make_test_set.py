@@ -3,6 +3,8 @@ import numpy as np
 import cv2
 from enum import Enum
 import math
+import os
+from os.path import join
 
 account_id = {}
 fpd = 16.0 # frames per day
@@ -54,7 +56,15 @@ def initializeLocations(image_size, margin):
     delta_theta = 2*math.pi/num_accounts
     accounts = []
     for i in range(num_accounts):
+        # polar coordinate
         accounts.append(Account(account_name[i], int(center+radius*math.cos(delta_theta*i)), int(center-radius*math.sin(delta_theta*i)), account_type[i]))
+        # on image boundary
+        left_num = int(math.floor(num_accounts/2.0))
+        if i <= left_num: # left boundary
+            height = image_size/left_num
+            accounts.append(Account(account_name[i], ))
+        else: # right boundary
+            accounts.append(Account())
     return accounts
 
 def resizeImages(images, target_size):
@@ -168,6 +178,18 @@ def draw_payment(pymt, accounts, images):
 
     return images
 
+def getExample(seq_len, initial_size, frame_size, accounts):
+    images = initialize_images(seq_len, initial_size, accounts)
+    transaction_history = synthesizeTranscations()
+
+    for pymt in transaction_history:
+        # each transaction:
+        images = draw_payment(pymt, accounts, images)
+
+    images = resizeImages(images, frame_size)
+    images = 255 - images #negate image
+
+    return images
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -176,9 +198,9 @@ if __name__ == '__main__':
                      an npz file.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    # parser.add_argument('--data_dir', type=str, metavar='DIR', required=True,
-    #                     help='Folder where the training set will be saved.')
-    parser.add_argument('--seq_len', type=int, metavar='LEN', default=7,
+    parser.add_argument('--data_dir', type=str, metavar='DIR', required=True,
+                        help='Folder where the training set will be saved.')
+    parser.add_argument('--seq_len', type=int, metavar='LEN', default=25,
                         help='Number of frames per training sequences.')
     parser.add_argument('--frame_size', type=int, metavar='SIZE', default=64,
                         help='Size of generated frames.')
@@ -186,26 +208,37 @@ if __name__ == '__main__':
                         help='Size of training set.')
     args = parser.parse_args()
 
-    args.seq_len = int(args.seq_len*fpd)
+    vid_len = 7*fpd
     initial_size = 128
     accounts = initializeLocations(initial_size, margin=15)
 
-    # for i in range(args.training_size):
+    test_videos = []
     for i in range(10):
-        images = initialize_images(args.seq_len, initial_size, accounts)
-        transaction_history = synthesizeTranscations()
+        images = getExample(vid_len, initial_size, args.frame_size, accounts)
 
-        for pymt in transaction_history:
-            # each transaction:
-            images = draw_payment(pymt, accounts, images)
-
-        # images = resizeImages(images, args.frame_size)
+        # Random timestep for the beginning of the video
+        t0 = np.random.randint(vid_len - args.seq_len + 1)
+        # Extract the sequence from synthesized video
+        x = images[t0:t0+args.seq_len,:,:]
 
         # write visualization to videos
-        video_file = '/home/ubuntu/PYMT/%04d.mp4' % (i)
+        video_file = '/home/ubuntu/workspace/srvp/results/payments/test_%04d.mp4' % (i)
         print(video_file)
-        out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 10, (args.frame_size*2, args.frame_size*2), isColor=False)
+        out = cv2.VideoWriter(video_file,cv2.VideoWriter_fourcc(*'mp4v'), 10, (args.frame_size, args.frame_size), isColor=False)
 
         for i in range(args.seq_len):
-            out.write(images[i])
+            out.write(x[i])
         out.release()
+
+        test_videos.append(x.astype(np.uint8))
+
+    test_videos = np.array(test_videos, dtype=np.uint8).transpose(1, 0, 2, 3)
+
+    # Save results at the given path
+    fname = 'test_payments.npz'
+    print(f'Saving testset at {join(args.data_dir, fname)}')
+    # Create the directory if needed
+    if not os.path.isdir(args.data_dir):
+        os.makedirs(args.data_dir)
+    np.savez_compressed(join(args.data_dir, fname),
+                        sequences=test_videos)
