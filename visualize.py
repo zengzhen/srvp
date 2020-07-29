@@ -4,6 +4,21 @@ import cv2
 import sys
 import argparse
 import math
+from preprocessing.market_heatmap import make_test_set
+
+def addMarketLabel(data_dir, image):
+    # names of markets from CSV files in data folder
+    names = make_test_set.loadCSVData(data_dir, getCSVName=True)
+    # overlay market labels on 3x3 grid image
+    for id in range(len(names)):
+        # 9 markets visualized in 3x3 grid
+        tile_w = 21
+        tile_h = 21
+        x, y = (int(math.floor(id/3.0)) * tile_h + 2, id%3 * tile_w + 11)
+        # put market label text
+        cv2.putText(image, names[id], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.28, (255, 255, 255), 1)
+
+    return image
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser('''
@@ -49,6 +64,7 @@ if __name__ == "__main__":
     elif args.dataset == "market_heatmap":
         test_path = '/home/ubuntu/market_heatmap/test_market_heatmap.npz'
         pred_path = '/home/ubuntu/workspace/srvp/models/market_heatmap/'
+        market_path = '/home/ubuntu/market_heatmap/test/'
     elif args.dataset == "payments":
         test_path = '/home/ubuntu/PYMT/test_payments.npz'
         pred_path = '/home/ubuntu/workspace/srvp/models/payments/'
@@ -140,9 +156,15 @@ if __name__ == "__main__":
             else:
                 img = sequence[i]
             cv2.rectangle(img,(0,0),(img.shape[0]-1,img.shape[1]-1),(0,255,0),2)
+            # add labels of market if needed
+            if args.dataset == 'market_heatmap':
+                img = addMarketLabel(market_path, img)
+
             # three rows of images: upper gt, lower pred
             if show_residual:
                 residual = np.zeros([img.shape[0], img.shape[1], 3], np.uint8)
+                if args.dataset == 'market_heatmap':
+                    residual = addMarketLabel(market_path, residual)
                 conc_img = cv2.vconcat([img, img, img, residual])
             else:
                 conc_img = cv2.vconcat([img, img, img])
@@ -167,14 +189,22 @@ if __name__ == "__main__":
                 img_worst = pred_seq_worst[i]
             cv2.rectangle(img_best,(0,0),(img_best.shape[0]-1,img_best.shape[1]-1),(0,165,255),2)
             cv2.rectangle(img_worst,(0,0),(img_worst.shape[0]-1,img_worst.shape[1]-1),(0,165,255),2)
+            if args.dataset == 'market_heatmap':
+                img_best = addMarketLabel(market_path, img_best)
+                img_worst = addMarketLabel(market_path, img_worst)
             # two rows of images: upper gt, lower pred
             if color_convert:
                 gt_img = cv2.cvtColor(sequence[i+cond_num], cv2.COLOR_BGR2RGB)
             else:
                 gt_img = sequence[i+cond_num]
             cv2.rectangle(gt_img,(0,0),(gt_img.shape[0]-1,gt_img.shape[1]-1),(0,255,0),2)
+            if args.dataset == 'market_heatmap':
+                gt_img = addMarketLabel(market_path, gt_img)
+
             if show_residual:
                 residual = abs(gt_img.astype(np.int32) - img_best.astype(np.int32)).astype(np.uint8)
+                if args.dataset == 'market_heatmap':
+                    residual = addMarketLabel(market_path, residual)
                 conc_img = cv2.vconcat([gt_img, img_best, img_worst, residual])
             else:
                 conc_img = cv2.vconcat([gt_img, img_best, img_worst])
