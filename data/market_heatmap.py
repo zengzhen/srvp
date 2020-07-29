@@ -13,13 +13,7 @@ from torchvision import datasets
 from data.base import VideoDataset
 import sys
 
-def list_files(directory, extension):
-    return (f for f in os.listdir(directory) if f.endswith('.' + extension))
-
-def sigmoid(x):
-    k = 1.0
-    shift = 1.0
-    return 1.0 / (1.0 + math.exp(-k*(x-shift)))
+from preprocessing.market_heatmap import make_test_set
 
 class MarketHeatMap(VideoDataset):
   '''
@@ -76,9 +70,9 @@ class MarketHeatMap(VideoDataset):
         #     sys.exit(1)
         # draw tiles
         if perc >= 0: # green
-            images[t] = cv2.rectangle(images[t], (x1, y1), (x2, y2), (0, 255*sigmoid(perc), 0), -1)
+            images[t] = cv2.rectangle(images[t], (x1, y1), (x2, y2), (0, 255*make_test_set.sigmoid(perc, k=0.5), 0), -1)
         else: # red
-            images[t] = cv2.rectangle(images[t], (x1, y1), (x2, y2), (0, 0, 255*sigmoid(abs(perc))), -1)
+            images[t] = cv2.rectangle(images[t], (x1, y1), (x2, y2), (0, 0, 255*make_test_set.sigmoid(abs(perc), k=0.5)), -1)
 
     # video_file = '/home/ubuntu/workspace/srvp/results/market_heatmap/train_%04d.mp4' % (self.train_count)
     # print(video_file)
@@ -110,18 +104,7 @@ class MarketHeatMap(VideoDataset):
   def make_dataset(cls, data_dir, nx, seq_len, train):
     if train:
       # read in all CSV files: 06.29.2010 - 12.31.2018
-      data = []
-      for index, market in enumerate(list_files(data_dir, 'csv')):
-          print(market)
-          market_data = np.genfromtxt(os.path.join(data_dir, market), delimiter=',', skip_header=1)
-          # column 4 - close values
-          market_data = market_data[:,4]
-          # calcualte gain/loss percentage based on close values
-          market_data = (market_data[1:] - market_data[:-1])/market_data[:-1]*100
-          if index==0:
-              data = market_data
-          else:
-              data = np.column_stack((data, market_data))
+      data = make_test_set.loadCSVData(data_dir)
     else:
       dataset = np.load(os.path.join(data_dir, 'test_market_heatmap.npz'),
                               allow_pickle=True)

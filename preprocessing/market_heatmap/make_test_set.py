@@ -13,16 +13,58 @@ import cv2
 
 import math
 import csv
+import matplotlib.pyplot as plt
 
 sys.path.append('/home/ubuntu/workspace/srvp')
 
 def list_files(directory, extension):
     return (f for f in os.listdir(directory) if f.endswith('.' + extension))
 
-def sigmoid(x):
-    k = 1.0
-    shift = 1.0
+def sigmoid(x, shift=0.0, k=1.0):
     return 1.0 / (1.0 + math.exp(-k*(x-shift)))
+
+def loadCSVData(data_dir, getCSVName=False):
+    if getCSVName: # just get names
+        names = []
+        for index, market in enumerate(list_files(data_dir, 'csv')):
+            # print(market)
+            market = os.path.splitext(market)[0][:3]
+            names.append(market)
+        return names
+    else: # get data
+        data = []
+        for index, market in enumerate(list_files(data_dir, 'csv')):
+            # print(market)
+            market_data = np.genfromtxt(os.path.join(data_dir, market), delimiter=',', skip_header=1)
+            # column 4 - close values
+            market_data = market_data[:,4]
+            # calcualte gain/loss percentage based on close values
+            step = 5
+            market_data = (market_data[step:] - market_data[:-step])/market_data[:-step]*100
+
+            # visualize percentage change with different step size
+            # fig = plt.figure(figsize=(15,6))
+            # step = 1
+            # temp = (market_data[step:] - market_data[:-step])/market_data[:-step]*100
+            # temp_annt = "step=1, mean={mean}, std={std}".format(mean=round(np.mean(temp),2), std=round(np.std(temp),2))
+            # temp1, = plt.plot(temp, label=temp_annt)
+            # step = 5
+            # temp = (market_data[step:] - market_data[:-step])/market_data[:-step]*100
+            # temp_annt = "step=5, mean={mean}, std={std}".format(mean=round(np.mean(temp),2), std=round(np.std(temp),2))
+            # for temp_idx in range(3):
+            #     temp = np.insert(temp, 0, 0)
+            # temp2, = plt.plot(temp, label=temp_annt)
+            # plt.legend(handles=[temp1, temp2])
+
+            # plt.show()
+            # plt.savefig('percentage_change_' + market + '.png')
+
+            if index==0:
+                data = market_data
+            else:
+                data = np.column_stack((data, market_data))
+
+        return data
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -42,19 +84,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # read in all CSV files: 01.01.2019 - 12.31.2019
-    data = []
     test_data_dir = args.data_dir + '/test/'
-    for index, market in enumerate(list_files(test_data_dir, 'csv')):
-        print(market)
-        market_data = np.genfromtxt(os.path.join(test_data_dir, market), delimiter=',', skip_header=1)
-        # column 4 - close values
-        market_data = market_data[:,4]
-        # calcualte gain/loss percentage based on close values
-        market_data = (market_data[1:] - market_data[:-1])/market_data[:-1]*100
-        if index==0:
-            data = market_data
-        else:
-            data = np.column_stack((data, market_data))
+    data = loadCSVData(test_data_dir)
 
     # Register videos
     test_videos = []
@@ -68,17 +99,19 @@ if __name__ == "__main__":
         images = np.zeros([args.seq_len, args.frame_size, args.frame_size, 3], np.uint8)
         for t in range(args.seq_len):
             for id in range(n_markets):
-                # 9 markets visualzied in 3x3 grid
+                # 9 markets visualized in 3x3 grid
                 tile_w = 21
                 tile_h = 21
                 perc = data[t0+t][id]
                 x1, y1 = (int(math.floor(id/3.0)) * tile_h, id%3 * tile_w)
                 x2, y2 = (x1+tile_h-2, y1+tile_w-2)
-                # draw tiles
+                # draw tiles: green v.s. red
                 if perc >= 0: # green
-                    images[t] = cv2.rectangle(images[t], (x1, y1), (x2, y2), (0, 255*sigmoid(perc), 0), -1)
+                    images[t] = cv2.rectangle(images[t], (x1, y1), (x2, y2), (0, 255*sigmoid(perc, k=0.5), 0), -1)
                 else: # red
-                    images[t] = cv2.rectangle(images[t], (x1, y1), (x2, y2), (0, 0, 255*sigmoid(abs(perc))), -1)
+                    images[t] = cv2.rectangle(images[t], (x1, y1), (x2, y2), (0, 0, 255*sigmoid(abs(perc), k=0.5)), -1)
+                # draw tiles: light green v.s. dark green
+                # images[t] = cv2.rectangle(images[t], (x1, y1), (x2, y2), (0, 255*sigmoid(perc, k=2), 0), -1)
 
         # Register video and other information
         test_videos.append(images.astype(np.uint8))
